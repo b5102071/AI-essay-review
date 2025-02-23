@@ -3,25 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Essay Evaluator</title>
-    <script>
-        async function evaluateEssay() {
-            let essay = document.getElementById("essay").value;
-            let response = await fetch("/evaluate", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "essay=" + encodeURIComponent(essay)
-            });
-            let result = await response.json();
-            document.getElementById("result").innerText = result.response;
-        }
-    </script>
+    <title>AI Essay Review</title>
 </head>
 <body>
     <h1>Essay Evaluation</h1>
-    <textarea id="essay" rows="10" cols="50" placeholder="Enter your essay here..."></textarea><br>
-    <button onclick="evaluateEssay()">Evaluate</button>
+    <form id="essayForm">
+        <textarea id="essay" rows="10" cols="50" placeholder="Enter your essay here"></textarea><br>
+        <button type="submit">Evaluate</button>
+    </form>
+
     <h2>Result:</h2>
-    <p id="result"></p>
+    <p id="result"> </p>
+
+    <script>
+        // 監聽表單提交事件
+        document.getElementById('essayForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // 防止表單的預設提交行為
+
+            var essay = document.getElementById('essay').value;  // 獲取作文內容
+
+            // 發送 POST 請求到 /evaluate 路由
+            fetch('/evaluate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ essay: essay })  // 以 JSON 格式發送作文
+            })
+            .then(response => response.json())  // 處理 JSON 格式的回應
+            .then(data => {
+                // 如果回應中有評估結果，顯示在頁面上
+                if (data.feedback) {
+                    document.getElementById('result').innerText = data.feedback;
+                } else {
+                    document.getElementById('result').innerText = "Error: " + data.error;
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerText = "Error: " + error.message;  // 處理錯誤
+            });
+        });
+    </script>
 </body>
 </html>
