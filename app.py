@@ -21,12 +21,15 @@ def evaluate():
 
     try:
         # 呼叫 OpenAI API 來生成評估
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=f"Please evaluate this essay:\n\n{essay}",
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # 使用更新的 GPT 模型
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": essay}  # 使用學生的作文內容作為輸入
+            ],
             max_tokens=10000
         )
-        feedback = response["choices"][0]["text"].strip()
+        feedback = response["choices"][0]["message"]["content"].strip()
         return jsonify({"feedback": feedback})  # 回傳評估結果
 
     except Exception as e:
