@@ -7,6 +7,12 @@ app = Flask(__name__)
 # 確保 OpenAI API 金鑰設定正確
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# 根路徑處理
+@app.route('/')
+def home():
+    return "Welcome to AI Essay Review! Your service is up and running."
+
+# 評估路由
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
     try:
@@ -32,7 +38,7 @@ def evaluate():
             return jsonify({"error": f"Unexpected error: {str(e)}"}), 500  # 其他未知錯誤
 
     except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500  # 捕捉任何其他錯誤
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500  # 捕捉任何一般錯誤
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")  # 這樣 Flask 會根據 Render 的設定來分配端口
