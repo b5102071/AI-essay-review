@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Evaluator</title>
+    <script>
+        async function evaluateEssay() {
+            let essay = document.getElementById("essay").value;
+            let response = await fetch("/evaluate", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "essay=" + encodeURIComponent(essay)
+            });
+            let result = await response.json();
+            document.getElementById("result").innerText = result.response;
+        }
+    </script>
+</head>
+<body>
+    <h1>Essay Evaluation</h1>
+    <textarea id="essay" rows="10" cols="50" placeholder="Enter your essay here..."></textarea><br>
+    <button onclick="evaluateEssay()">Evaluate</button>
+    <h2>Result:</h2>
+    <p id="result"></p>
+</body>
+</html>
