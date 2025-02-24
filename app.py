@@ -1,39 +1,43 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 import openai
-from dotenv import load_dotenv
-import os
 
-# 載入環境變數
+# Load environment variables from .env file
 load_dotenv()
 
-# 初始化 Flask 應用
+# Initialize Flask app
 app = Flask(__name__)
 
-# 從環境變數中讀取 OpenAI API 密鑰
-openai.api_key = os.getenv('OPENAI_API_KEY')  # 從 .env 文件中獲取 API 密鑰
+# Set OpenAI API key from .env file
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# 設置 /evaluate 路由來處理 POST 請求
+@app.route('/')
+def index():
+    return "Welcome to AI Essay Review!"
+
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
     try:
-        # 從前端接收文章
-        essay = request.json.get('essay')
-
-        # 發送請求到 OpenAI API
+        # Get the essay text from the POST request
+        essay = request.form['essay']
+        
+        # Call the OpenAI API for evaluation
         response = openai.Completion.create(
-            engine="text-davinci-003",  # 使用 Davinci 引擎
-            prompt=essay,
-            max_tokens=200
+            model="text-davinci-003",
+            prompt=f"Please review the following essay:\n{essay}\nProvide feedback and suggestions for improvement.",
+            max_tokens=500
         )
-
-        # 取得結果並回傳
+        
+        # Extract feedback from the response
         feedback = response["choices"][0]["text"].strip()
-        return jsonify({"result": feedback}), 200
-
+        
+        # Return the feedback as JSON
+        return jsonify({"result": feedback})
+    
     except Exception as e:
-        # 捕捉錯誤並回傳
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # 啟動 Flask 應用並設定為 debug 模式，讓它可以根據 render 的配置自動綁定端口
+    # Run the Flask app with debug mode enabled
     app.run(debug=True, host="0.0.0.0")
