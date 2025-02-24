@@ -7,39 +7,35 @@
 </head>
 <body>
     <h1>Essay Evaluation</h1>
-    <textarea id="essay-input" rows="10" cols="50" placeholder="Enter your essay here"></textarea><br><br>
+    <!-- Essay input area -->
+    <textarea id="essayInput" placeholder="Enter your essay here"></textarea>
+    <br>
+    <!-- Evaluate button -->
     <button onclick="evaluateEssay()">Evaluate</button>
 
-    <h2>Result:</h2>
-    <p id="result"></p>
+    <!-- Result display -->
+    <div id="result"></div>
 
+    <!-- JavaScript for POST request -->
     <script>
         function evaluateEssay() {
-            const essay = document.getElementById("essay-input").value;
-            
-            if (!essay) {
-                alert("Please enter an essay.");
-                return;
-            }
-
-            // 發送 POST 請求到後端
-            fetch('/evaluate', {
+            // Get the essay input value
+            fetch('https://ai-essay-review.onrender.com/evaluate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ essay: essay })
+                body: JSON.stringify({
+                    essay: document.getElementById("essayInput").value  // Get the text from the textarea
+                })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.result) {
-                    document.getElementById("result").innerText = data.result;
-                } else {
-                    document.getElementById("result").innerText = "Error: " + data.error;
-                }
+                // Handle the response (display result)
+                document.getElementById("result").innerHTML = data.result; // Display the result
             })
             .catch(error => {
-                document.getElementById("result").innerText = "Error: " + error;
+                console.error('Error:', error);
             });
         }
     </script>
