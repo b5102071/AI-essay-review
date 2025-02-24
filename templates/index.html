@@ -7,28 +7,40 @@
 </head>
 <body>
     <h1>Essay Evaluation</h1>
-    <form id="essayForm">
-        <textarea id="essayInput" name="essay" rows="10" cols="50" placeholder="Enter your essay here"></textarea><br><br>
-        <button type="button" onclick="evaluateEssay()">Evaluate</button>
-    </form>
+    <textarea id="essay-input" rows="10" cols="50" placeholder="Enter your essay here"></textarea><br><br>
+    <button onclick="evaluateEssay()">Evaluate</button>
 
-    <h3>Result:</h3>
-    <div id="result"></div>
+    <h2>Result:</h2>
+    <p id="result"></p>
 
     <script>
-        async function evaluateEssay() {
-            const essay = document.getElementById("essayInput").value;
+        function evaluateEssay() {
+            const essay = document.getElementById("essay-input").value;
+            
+            if (!essay) {
+                alert("Please enter an essay.");
+                return;
+            }
 
-            const response = await fetch("/evaluate", {
-                method: "POST",
+            // 發送 POST 請求到後端
+            fetch('/evaluate', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ essay: essay }),
+                body: JSON.stringify({ essay: essay })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result) {
+                    document.getElementById("result").innerText = data.result;
+                } else {
+                    document.getElementById("result").innerText = "Error: " + data.error;
+                }
+            })
+            .catch(error => {
+                document.getElementById("result").innerText = "Error: " + error;
             });
-
-            const data = await response.json();
-            document.getElementById("result").innerText = data.result || "Error: Unable to get result";
         }
     </script>
 </body>

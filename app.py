@@ -20,11 +20,11 @@ def evaluate():
         return jsonify({"error": "No essay provided"}), 400
 
     try:
-        # 使用 OpenAI 進行文本分析
+        # 使用 OpenAI 進行文本分析，將 max_tokens 設為 10000
         response = openai.Completion.create(
             model="text-davinci-003",  # 你可以根據需要使用不同的模型
             prompt=essay,
-            max_tokens=150
+            max_tokens=10000  # 根據 Render 的要求，可以設定 max_tokens
         )
 
         result = response.choices[0].text.strip()
