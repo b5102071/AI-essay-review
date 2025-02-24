@@ -1,39 +1,41 @@
-from flask import Flask, request, jsonify, render_template
-import openai
 import os
+import openai
+from flask import Flask, request, jsonify
+
+# 設置 OpenAI API 密鑰
+openai.api_key = os.getenv("OPENAI_API_KEY")  # 或將這行替換為 openai.api_key = 'your-api-key'，但不建議寫死密鑰
 
 app = Flask(__name__)
 
-# 確保 OpenAI API 金鑰設定正確
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-# 根路徑處理，顯示表單
 @app.route('/')
-def home():
-    return render_template('index.html')
+def index():
+    return 'Welcome to AI Essay Review! Your service is up and running.'
 
-# 評估路由，處理表單提交
 @app.route('/evaluate', methods=['POST'])
-def evaluate():
-    essay = request.json.get('essay')  # 從 POST 請求中獲取作文
-    if not essay:
-        return jsonify({"error": "No essay provided"}), 400  # 如果沒有提供 essay，回傳錯誤
-
+def evaluate_essay():
     try:
-        # 呼叫 OpenAI API 來生成評估
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # 使用更新的 GPT 模型
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": essay}  # 使用學生的作文內容作為輸入
-            ],
-            max_tokens=10000
+        # 獲取文章內容
+        data = request.get_json()
+        essay = data.get('essay')
+
+        if not essay:
+            return jsonify({"error": "No essay provided"}), 400
+
+        # 發送請求到 OpenAI API 進行評估
+        response = openai.Completion.create(
+            engine="text-davinci-003",  # 或者使用你需要的引擎，這裡以 text-davinci-003 為例
+            prompt=essay,
+            max_tokens=500,
+            temperature=0.7,
         )
-        feedback = response["choices"][0]["message"]["content"].strip()
-        return jsonify({"feedback": feedback})  # 回傳評估結果
+
+        feedback = response.choices[0].text.strip()  # 提取 API 回應中的文本
+
+        return jsonify({"feedback": feedback})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # 捕捉並回傳錯誤
+        # 如果有錯誤，捕捉並返回錯誤訊息
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")  # 這樣 Flask 會根據 Render 的設定來分配端口
+    app.run(debug=True, host="0.0.0.0", port=10000)  # 設定端口為 10000，並啟用 debug 模式
