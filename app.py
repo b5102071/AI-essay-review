@@ -1,43 +1,37 @@
-import os
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify
 import openai
+import os
+from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# 加載環境變數
 load_dotenv()
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Set OpenAI API key from .env file
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# 設定 OpenAI API 金鑰
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@app.route('/')
-def index():
-    return "Welcome to AI Essay Review!"
-
-@app.route('/evaluate', methods=['POST'])
+@app.route("/evaluate", methods=["POST"])
 def evaluate():
+    data = request.get_json()
+    essay = data.get("essay")
+
+    if not essay:
+        return jsonify({"error": "No essay provided"}), 400
+
     try:
-        # Get the essay text from the POST request
-        essay = request.form['essay']
-        
-        # Call the OpenAI API for evaluation
+        # 使用 OpenAI 進行文本分析
         response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=f"Please review the following essay:\n{essay}\nProvide feedback and suggestions for improvement.",
-            max_tokens=500
+            model="text-davinci-003",  # 你可以根據需要使用不同的模型
+            prompt=essay,
+            max_tokens=150
         )
-        
-        # Extract feedback from the response
-        feedback = response["choices"][0]["text"].strip()
-        
-        # Return the feedback as JSON
-        return jsonify({"result": feedback})
-    
+
+        result = response.choices[0].text.strip()
+        return jsonify({"result": result})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    # Run the Flask app with debug mode enabled
-    app.run(debug=True, host="0.0.0.0")
+if __name__ == "__main__":
+    app.run(debug=True)
