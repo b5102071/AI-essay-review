@@ -3,12 +3,9 @@ import os
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-
 app = Flask(__name__)
 
-# Set OpenAI API key
+# 使用 Render 提供的環境變數
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route("/evaluate", methods=["POST"])
@@ -20,24 +17,18 @@ def evaluate():
         return jsonify({"error": "No essay provided"}), 400
 
     try:
-        # Use OpenAI to analyze the essay, setting max_tokens to 10000
+        # 使用 OpenAI 進行文本分析，將 max_tokens 設為 10000
         response = openai.Completion.create(
-            model="text-davinci-003",  # You can use a different model if needed
+            model="text-davinci-003",  # 您可以根據需要使用不同的模型
             prompt=essay,
-            max_tokens=10000  # Set max_tokens based on your requirements
+            max_tokens=10000  # 根據 Render 的要求，可以設定 max_tokens
         )
 
         result = response.choices[0].text.strip()
         return jsonify({"result": result})
 
-    except openai.error.OpenAIError as e:
-        # Catch OpenAI API errors and return the error message
-        return jsonify({"error": f"OpenAI API error: {str(e)}"}), 500
-
     except Exception as e:
-        # Catch any other errors and return the error message
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    port = os.getenv("PORT", 5000)  # Default to 5000 for local testing
-    app.run(debug=True, host="0.0.0.0", port=int(port))
+    app.run(debug=True)
